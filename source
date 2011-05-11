@@ -11,11 +11,11 @@ CLEARSCREEN	LD	A,0
 		LD	E, 1
 		LDIR ;Go to the start point.
 
-DRAWBLOCK	LD	A, 208
+DRAWBLACKBLOCK	LD	A, 0
 		LD	(HL), A
 		;Dump colour bit to display file
-		LD	BC, 2
+		;LD	BC, 0
 		;Go 02FFh across?
-		LDIR
+		;LDIR
 		RET
 		
