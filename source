@@ -1,18 +1,20 @@
 ORG 40000
-DRAWBLOCK	LD	A,0		
+CLEARSCREEN	LD	A,0
 		;Colour bit. We want solid black for this.
 		LD	HL,4000h
 		;We're drawing to the display file, which
 		;starts at address 4000h.
-		LD	BC,8
+		LD	BC,1800h
 		;Draws 8px across?
 		LD	(HL),0
 		LD	D, H
 		LD	E, 1
-		LDIR ;Wussis do
+		LDIR ;Go to the start point.
+
+DRAWBLOCK	LD	A, 208
 		LD	(HL), A
 		;Dump colour bit to display file
-		LD	BC, 02FFh
+		LD	BC, 2
 		;Go 02FFh across?
 		LDIR
 		RET
