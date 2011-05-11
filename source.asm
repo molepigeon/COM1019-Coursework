@@ -16,8 +16,14 @@ DRAWBLACKLINE	;Draws a black line on the screen.
 		LD	A, 0
 		LD	(HL), A
 		;Dump colour bit to display file
-		LD	BC, 31
-		;Go across the first line
-		LDIR
-		;Loops to draw the line.
-		RET
+		
+		OR	C
+
+		LD	A,7Fh
+		IN	A,(0FEh)
+		RRA
+		JP	NC,RUNAWAY
+
+		JP	CLEARSCREEN
+
+RUNAWAY		RET
