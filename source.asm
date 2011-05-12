@@ -17,30 +17,75 @@ DRAWBLACKLINE	;Draws a black square on the screen.
 		;Dump colour bit to display file
 		JP	HOLDINGPATTERN
 
+STEPUP		LD	(HL),56
+		;Set HL to a blank colour
+		LD	A,L
+		SBC	A,32
+		CALL	C,DECH
+		LD	L,A
+		;Move to the previous line
+		LD	(HL),0
+		;Make the new block black
+		JP	WAIT
+
+STEPDOWN	LD	(HL),56
+		;Set HL to a blank colour
+		LD	A,L
+		ADD	A,32
+		CALL	C,INCH
+		LD	L,A
+		;Move to the next line
+		LD	(HL),0
+		;Make the new block black
+		JP	WAIT
+
 STEPRIGHT	LD	(HL),56
 		;Set HL to a blank colour
-		INC	L
+		INC	HL
 		;Move to the next block	
 		LD	(HL),0
 		;Make the new block black
-		LD	B,255
-		;Load B with a wait for the next jump
 		JP	WAIT
 
-STEPLEFT	LD	(HL),56
+STEPLEFT	
+		LD	(HL),56
 		;Set HL to a blank colour
-		DEC	L
+		DEC	HL
 		;Move to the next block	
+
+		PUSH	HL
+		
+		LD	A,0
+		CP	L
+		
+		JP	Z,BLOCKLEFT
+
+MOVELEFT	POP	HL
 		LD	(HL),0
 		;Make the new block black
-		LD	B,255
-		;Load B with a wait for the next jump
 		JP	WAIT
 
-WAIT		DJNZ	WAIT
+BLOCKLEFT	
+		POP	HL
+		INC	HL
+		LD	(HL),0
+		JP	WAIT
+
+WAIT		HALT
+		HALT
+		HALT
+		HALT
+		HALT
 		JP	HOLDINGPATTERN
 
 HOLDINGPATTERN	OR	C
+
+		LD	A,0FBh
+		IN	A,(0FEh)
+		RRA
+		RRA
+		JP	NC,STEPUP
+		;Check if "A" is pressed
 
 		LD	A,0FDh
 		IN	A,(0FEh)
@@ -53,6 +98,20 @@ HOLDINGPATTERN	OR	C
 		RRA
 		RRA
 		RRA
-		;Check if "D" is pressed
 		JP	NC,STEPRIGHT
+		;Check if "D" is pressed
+
+		LD	A,0FDh
+		IN	A,(0FEh)
+		RRA
+		RRA
+		JP	NC,STEPDOWN
+		;Check if "S" is pressed
+
 		JP	HOLDINGPATTERN
+
+INCH		INC H
+		RET
+
+DECH		DEC H
+		RET
