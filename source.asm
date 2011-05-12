@@ -6,24 +6,28 @@ INITALCLEAR	; Code to clear the screen. Taken from Lab 3.
 		;We're drawing to the display file, which
 		;starts at address 4000h.
 		LD	BC,1800h
-		;Draws on the entire screen.
+		;Select every pixel to clear.
 		LD	(HL),0
 		LD	D, H
 		LD	E, 1
-		LDIR ;Go to the start point.
+		LDIR ;Clear the entire screen.
 
 DRAWBLACKLINE	;Draws a black square on the screen.
 		LD	(HL), A
 		;Dump colour bit to display file
 		JP	HOLDINGPATTERN
+		;Go back to the loop.
 
 STEPUP		LD	(HL),56
 		;Set HL to a blank colour
 		LD	A,L
+		;Can only call SBC on register A, so put L into it.
 		SBC	A,32
+		;We must go back 32 blocks to get to the point directly above.
 		CALL	C,DECH
+		;Decrement H if there's a carry.
 		LD	L,A
-		;Move to the previous line
+		;Load our recalculated L.
 		LD	(HL),0
 		;Make the new block black
 		JP	WAIT
@@ -31,10 +35,13 @@ STEPUP		LD	(HL),56
 STEPDOWN	LD	(HL),56
 		;Set HL to a blank colour
 		LD	A,L
+		;Can only call SBC on register A, so put L into it.
 		ADD	A,32
+		;We must go forward 32 blocks to get to the point directly below.
 		CALL	C,INCH
+		;Increment H if there's a carry.
 		LD	L,A
-		;Move to the next line
+		;Load our recalculated L.
 		LD	(HL),0
 		;Make the new block black
 		JP	WAIT
@@ -54,64 +61,85 @@ STEPLEFT
 		;Move to the next block	
 
 		PUSH	HL
+		;Put HL onto the stack. We're playing with it.
 		
 		LD	A,0
 		CP	L
+		;Is L zero?
 		
 		JP	Z,BLOCKLEFT
+		;Yes, it is. That means we've hit the edge, and can't go back.
 
 MOVELEFT	POP	HL
+		;We dumped this earlier. Now we need it back.
 		LD	(HL),0
 		;Make the new block black
 		JP	WAIT
 
 BLOCKLEFT	
 		POP	HL
+		;We dumped this earlier. Now we need it back.
 		INC	HL
+		;Move one block higher, or one to the left.
 		LD	(HL),0
+		;Make the new block black
 		JP	WAIT
 
-WAIT		HALT
-		HALT
-		HALT
-		HALT
-		HALT
+WAIT		HALT ;This
+		HALT ;Makes
+		HALT ;A
+		HALT ;Nice
+		HALT ;Delay
 		JP	HOLDINGPATTERN
 
 HOLDINGPATTERN	OR	C
+		;Not entirely sure why this is here. We saw it in a lab,
+		;and it breaks without it. So hey.
 
+		;--- Start W key spotting ---
 		LD	A,0FBh
+		;Read Q - T.
 		IN	A,(0FEh)
+		;Read the keyboard input port.
+		RRA ;Cycle to the W key.
 		RRA
-		RRA
-		JP	NC,STEPUP
-		;Check if "A" is pressed
+		JP	NC,STEPUP ;If W is pressed, move up.
+		;--- End W key spotting ---
 
+		;--- Start A key spotting ---
 		LD	A,0FDh
+		;Read A - G
 		IN	A,(0FEh)
-		RRA
-		JP	NC,STEPLEFT
-		;Check if "A" is pressed
+		;Read the keyboard input port.
+		RRA ;Cycle to the A key.
+		JP	NC,STEPLEFT ; If A is pressed, move left.
+		;--- End A key spotting ---
 
+		;--- Start D key spotting ---
 		LD	A,0FDh
+		;Read A - G
 		IN	A,(0FEh)
+		;Read the keyboard input port.
+		RRA ;Cycle to the D key.
 		RRA
 		RRA
-		RRA
-		JP	NC,STEPRIGHT
-		;Check if "D" is pressed
+		JP	NC,STEPRIGHT ;If D is pressed, move right.
+		;--- End D key spotting ---
 
+		;--- Start S key spotting ---
 		LD	A,0FDh
+		;Read A - G
 		IN	A,(0FEh)
+		;Read the keyboard input port.
+		RRA ;Cycle to the S key.
 		RRA
-		RRA
-		JP	NC,STEPDOWN
-		;Check if "S" is pressed
+		JP	NC,STEPDOWN ;If S is pressed, move down.
+		;--- End S key spotting ---
 
-		JP	HOLDINGPATTERN
+		JP	HOLDINGPATTERN ;Nothing's been pressed, so loop back.
 
-INCH		INC H
+INCH		INC H ;Increment H.
 		RET
 
-DECH		DEC H
+DECH		DEC H ;Decrement H.
 		RET
