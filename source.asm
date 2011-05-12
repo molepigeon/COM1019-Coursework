@@ -23,20 +23,36 @@ STEPRIGHT	LD	(HL),56
 		;Move to the next block	
 		LD	(HL),0
 		;Make the new block black
-		LD	BC,255
+		LD	B,255
 		;Load B with a wait for the next jump
 		JP	WAIT
 
-WAIT		DEC	BC
-		LD	A,0
-		ADD	B,A
-		JP	NZ,WAIT
+STEPLEFT	LD	(HL),56
+		;Set HL to a blank colour
+		DEC	L
+		;Move to the next block	
+		LD	(HL),0
+		;Make the new block black
+		LD	B,255
+		;Load B with a wait for the next jump
+		JP	WAIT
+
+WAIT		DJNZ	WAIT
 		JP	HOLDINGPATTERN
 
 HOLDINGPATTERN	OR	C
 
-		LD	A,7h
+		LD	A,0FDh
 		IN	A,(0FEh)
 		RRA
+		JP	NC,STEPLEFT
+		;Check if "A" is pressed
+
+		LD	A,0FDh
+		IN	A,(0FEh)
+		RRA
+		RRA
+		RRA
+		;Check if "D" is pressed
 		JP	NC,STEPRIGHT
 		JP	HOLDINGPATTERN
