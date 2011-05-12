@@ -1,6 +1,8 @@
 ORG 40000
-INITALCLEAR	; Code to clear the screen. Taken from Lab 3.
-		LD	A,0
+INITALCLEAR	LD A,0  ; colour 2 is RED 
+		OUT (0FEh),A ; set border to that colou
+		; Code to clear the screen. Taken from Lab 3.
+		LD	A,167
 		;Colour bit. We want solid black for this.
 		LD	HL,4000h
 		;We're drawing to the display file, which
@@ -18,7 +20,8 @@ DRAWBLACKLINE	;Draws a black square on the screen.
 		JP	HOLDINGPATTERN
 		;Go back to the loop.
 
-STEPUP		LD	(HL),56
+STEPUP		;PUSH (HL)
+		CALL	NC,CLEARBLOCK
 		;Set HL to a blank colour
 		LD	A,L
 		;Can only call SBC on register A, so put L into it.
@@ -28,11 +31,12 @@ STEPUP		LD	(HL),56
 		;Decrement H if there's a carry.
 		LD	L,A
 		;Load our recalculated L.
-		LD	(HL),0
+		LD	(HL),167
 		;Make the new block black
 		JP	WAIT
 
-STEPDOWN	LD	(HL),56
+STEPDOWN	;PUSH (HL)
+		CALL	NC,CLEARBLOCK
 		;Set HL to a blank colour
 		LD	A,L
 		;Can only call SBC on register A, so put L into it.
@@ -42,20 +46,21 @@ STEPDOWN	LD	(HL),56
 		;Increment H if there's a carry.
 		LD	L,A
 		;Load our recalculated L.
-		LD	(HL),0
+		LD	(HL),167
 		;Make the new block black
 		JP	WAIT
 
-STEPRIGHT	LD	(HL),56
+STEPRIGHT	;PUSH (HL)
+		CALL	NC,CLEARBLOCK
 		;Set HL to a blank colour
 		INC	HL
 		;Move to the next block	
-		LD	(HL),0
+		LD	(HL),167
 		;Make the new block black
 		JP	WAIT
 
-STEPLEFT	
-		LD	(HL),56
+STEPLEFT	;PUSH (HL)
+		CALL	NC,CLEARBLOCK
 		;Set HL to a blank colour
 		DEC	HL
 		;Move to the next block	
@@ -72,7 +77,7 @@ STEPLEFT
 
 MOVELEFT	POP	HL
 		;We dumped this earlier. Now we need it back.
-		LD	(HL),0
+		LD	(HL),167
 		;Make the new block black
 		JP	WAIT
 
@@ -81,7 +86,7 @@ BLOCKLEFT
 		;We dumped this earlier. Now we need it back.
 		INC	HL
 		;Move one block higher, or one to the left.
-		LD	(HL),0
+		LD	(HL),167
 		;Make the new block black
 		JP	WAIT
 
@@ -111,7 +116,7 @@ HOLDINGPATTERN	OR	C
 		;Read A - G
 		IN	A,(0FEh)
 		;Read the keyboard input port.
-		RRA ;Cycle to the A key.
+		RRA ;Cycle to the A key
 		JP	NC,STEPLEFT ; If A is pressed, move left.
 		;--- End A key spotting ---
 
@@ -136,7 +141,26 @@ HOLDINGPATTERN	OR	C
 		JP	NC,STEPDOWN ;If S is pressed, move down.
 		;--- End S key spotting ---
 
+		;--- Start E key spotting ---
+		LD	A,0FBh
+		;Read Q - T.
+		IN	A,(0FEh)
+		;Read the keyboard input port.
+		RRA ;Cycle to the E key.
+		RRA
+		RRA
+		JP	NC,DUMPBLOCK ;If E is pressed, dump a block.
+		;--- End E key spotting ---
+
 		JP	HOLDINGPATTERN ;Nothing's been pressed, so loop back.
+
+DUMPBLOCK	;PUSH (HL)
+		LD (HL),0
+		JP HOLDINGPATTERN
+
+CLEARBLOCK	;POP (HL)
+		LD (HL),63 ;Clears the block.
+		RET
 
 INCH		INC H ;Increment H.
 		RET
