@@ -132,7 +132,23 @@ HOLDINGPATTERN	OR	C
 		JP	NC,DUMPBLOCK ;If E is pressed, dump a block.
 		;--- End E key spotting ---
 
+		;--- Start Space key spotting ---
+		LD	A,07Fh
+		;Read break (SPACE).
+		IN	A,(0FEh)
+		;Read the keyboard input port.
+		RRA ;Cycle to the Space key.
+		CALL	NC, STARTLOOP
+		;--- End Space key spotting --
+
 		JP	HOLDINGPATTERN ;Nothing's been pressed, so loop back.
+
+STARTLOOP	CALL	NC, CLEARBLOCK
+		LD	HL, 5800h
+		CALL	GENLOOP
+		LD	HL, 5800h
+		RET
+
 
 DUMPBLOCK	LD	(HL),112	;Make the current block black
 		JP	HOLDINGPATTERN	;Go back to checking for keys.
@@ -196,3 +212,61 @@ COLORCHECK	LD	A,(HL)
 
 MARKER		LD	D,1
 		RET
+
+GENLOOP		CALL	CHECKSUITE
+		CALL	GOD
+
+		;Tests to ensure loops round the entire screen.
+		INC	L
+		LD	A,0
+		CP	L
+		CALL	Z,INCH
+
+		LD	A,5Bh
+		CP	H
+		RET	Z
+		;End loop tests.
+
+		JP	GENLOOP 	;Keep looping.
+
+GOD		LD	A,E
+		CP	0
+		CALL	Z,CLEARBLOCK
+
+		CP	1
+		CALL	Z,CLEARBLOCK
+
+		CP	3
+		CALL	Z,GODBLOCK
+
+		CP	4
+		CALL	NC,CLEARBLOCK
+
+		RET
+
+GODBLOCK	LD	(HL),112
+		RET
+
+CHECKSUITE	PUSH	HL
+		LD	E,0
+
+		;Check  straight up.
+		LD	A,L
+		SBC	A,32
+		CALL	C,DECH
+		LD	L,A
+
+		LD	A,(HL)
+		CP	63 ;Is it blank?
+		CALL	NZ,INCE
+
+		POP	HL
+		;PUSH	HL
+		;Done checking up.
+
+		
+		RET
+
+INCE		INC	E
+		RET
+		
