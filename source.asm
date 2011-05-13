@@ -51,8 +51,8 @@ STEPDOWN	;PUSH (HL)
 		;Make the new block black
 		JP	WAIT
 
-STEPRIGHT	;PUSH (HL)
-		CALL	NC,CLEARBLOCK
+STEPRIGHT	CALL	EDGERIGHT
+		CALL	CLEARBLOCK
 		;Set HL to a blank colour
 		INC	HL
 		;Move to the next block	
@@ -60,7 +60,7 @@ STEPRIGHT	;PUSH (HL)
 		;Make the new block black
 		JP	WAIT
 
-STEPLEFT	CALL	EDGECHECK
+STEPLEFT	CALL	EDGELEFT
 		;Try to check if the block is running away
 		CALL	CLEARBLOCK
 		;Set HL to a blank colour
@@ -148,10 +148,18 @@ INCH		INC H ;Increment H.
 DECH		DEC H ;Decrement H.
 		RET
 
-EDGECHECK	LD	A,0
+EDGELEFT	LD	A,0
 		CP	L
 		RET	NZ
 		LD	A,88
+		CP	H
+		RET	NZ
+		JP	EDGEBLOCK
+
+EDGERIGHT	LD	A,0FFh
+		CP	L
+		RET	NZ
+		LD	A,5Ah
 		CP	H
 		RET	NZ
 		JP	EDGEBLOCK
