@@ -59,33 +59,12 @@ STEPRIGHT	;PUSH (HL)
 		;Make the new block black
 		JP	WAIT
 
-STEPLEFT	;PUSH (HL)
-		CALL	NC,CLEARBLOCK
+STEPLEFT	CALL	EDGECHECK
+		;Try to check if the block is running away
+		CALL	CLEARBLOCK
 		;Set HL to a blank colour
 		DEC	HL
-		;Move to the next block	
-
-		PUSH	HL
-		;Put HL onto the stack. We're playing with it.
-		
-		LD	A,0
-		CP	L
-		;Is L zero?
-		
-		JP	Z,BLOCKLEFT
-		;Yes, it is. That means we've hit the edge, and can't go back.
-
-MOVELEFT	POP	HL
-		;We dumped this earlier. Now we need it back.
-		LD	(HL),167
-		;Make the new block black
-		JP	WAIT
-
-BLOCKLEFT	
-		POP	HL
-		;We dumped this earlier. Now we need it back.
-		INC	HL
-		;Move one block higher, or one to the left.
+		;Move to the next block			
 		LD	(HL),167
 		;Make the new block black
 		JP	WAIT
@@ -167,3 +146,17 @@ INCH		INC H ;Increment H.
 
 DECH		DEC H ;Decrement H.
 		RET
+
+EDGECHECK	LD	A,0
+		CP	L
+		RET	NZ
+		LD	A,64
+		CP	H
+		RET	Z
+		JP	EDGEBLOCK
+
+EDGEBLOCK	CALL	CLEARBLOCK
+		;Set HL to a blank colour		
+		LD	(HL),167
+		;Make the new block black
+		JP	WAIT
