@@ -21,12 +21,12 @@ DRAWBLACKLINE	;Draws a black square on the screen.
 		JP	HOLDINGPATTERN
 		;Go back to the loop.
 
-STEPUP		;PUSH (HL)
-		CALL	NC,CLEARBLOCK
+STEPUP		CALL	EDGETOP
+		CALL	CLEARBLOCK
 		;Set HL to a blank colour
 		LD	A,L
 		;Can only call SBC on register A, so put L into it.
-		SBC	A,32
+		SBC	A,31
 		;We must go back 32 blocks to get to the point directly above.
 		CALL	C,DECH
 		;Decrement H if there's a carry.
@@ -36,8 +36,8 @@ STEPUP		;PUSH (HL)
 		;Make the new block black
 		JP	WAIT
 
-STEPDOWN	;PUSH (HL)
-		CALL	NC,CLEARBLOCK
+STEPDOWN	CALL	EDGEBOTTOM
+		CALL	CLEARBLOCK
 		;Set HL to a blank colour
 		LD	A,L
 		;Can only call SBC on register A, so put L into it.
@@ -162,6 +162,22 @@ EDGERIGHT	LD	A,0FFh
 		LD	A,5Ah
 		CP	H
 		RET	NZ
+		JP	EDGEBLOCK
+
+EDGETOP		LD	A,58h
+		CP	H
+		RET	NZ
+		LD	A,31
+		CP	L
+		RET	C
+		JP	EDGEBLOCK
+
+EDGEBOTTOM	LD	A,5Ah
+		CP	H
+		RET	NC
+		LD	A,224
+		CP	L
+		RET	C
 		JP	EDGEBLOCK
 
 EDGEBLOCK	CALL	CLEARBLOCK
