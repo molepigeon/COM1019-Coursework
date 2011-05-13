@@ -2,7 +2,7 @@ ORG 40000
 INITALCLEAR	LD A,0  ; colour 2 is RED 
 		OUT (0FEh),A ; set border to that colou
 		; Code to clear the screen. Taken from Lab 3.
-		LD	A,167
+		LD	A,231
 		;Colour bit. We want solid black for this.
 		LD	HL,4000h
 		;We're drawing to the display file, which
@@ -22,23 +22,23 @@ DRAWBLACKLINE	;Draws a black square on the screen.
 		;Go back to the loop.
 
 STEPUP		CALL	EDGETOP
-		CALL	CLEARBLOCK
-		;Set HL to a blank colour
+		CALL	COLORCHECK
+		;Check if at an edge, and check the current colour
 		LD	A,L
 		;Can only call SBC on register A, so put L into it.
-		SBC	A,31
+		SBC	A,32
 		;We must go back 32 blocks to get to the point directly above.
 		CALL	C,DECH
 		;Decrement H if there's a carry.
 		LD	L,A
 		;Load our recalculated L.
-		LD	(HL),167
+		LD	(HL),231
 		;Make the new block black
 		JP	WAIT
 
 STEPDOWN	CALL	EDGEBOTTOM
-		CALL	CLEARBLOCK
-		;Set HL to a blank colour
+		CALL	COLORCHECK
+		;Check if at an edge, and check the current colour
 		LD	A,L
 		;Can only call SBC on register A, so put L into it.
 		ADD	A,32
@@ -47,26 +47,26 @@ STEPDOWN	CALL	EDGEBOTTOM
 		;Increment H if there's a carry.
 		LD	L,A
 		;Load our recalculated L.
-		LD	(HL),167
+		LD	(HL),231
 		;Make the new block black
 		JP	WAIT
 
 STEPRIGHT	CALL	EDGERIGHT
-		CALL	CLEARBLOCK
-		;Set HL to a blank colour
+		CALL	COLORCHECK
+		;Check if at an edge, and check the current colour
 		INC	HL
 		;Move to the next block	
-		LD	(HL),167
+		LD	(HL),231
 		;Make the new block black
 		JP	WAIT
 
 STEPLEFT	CALL	EDGELEFT
 		;Try to check if the block is running away
-		CALL	CLEARBLOCK
-		;Set HL to a blank colour
+		CALL	COLORCHECK
+		;Check if at an edge, and check the current colour
 		DEC	HL
 		;Move to the next block			
-		LD	(HL),167
+		LD	(HL),231
 		;Make the new block black
 		JP	WAIT
 
@@ -134,12 +134,13 @@ HOLDINGPATTERN	OR	C
 
 		JP	HOLDINGPATTERN ;Nothing's been pressed, so loop back.
 
-DUMPBLOCK	LD D,0;This says not to clear the block.
-		LD (HL),0;Make the current block black
-		JP HOLDINGPATTERN;Go back to checking for keys.
+DUMPBLOCK	LD	(HL),112	;Make the current block black
+		JP	HOLDINGPATTERN	;Go back to checking for keys.
 
-CLEARBLOCK	LD D,1;Block's been cleared. Reset the warning.
-		LD (HL),63 ;Clears the block.
+CLEARBLOCK	LD	(HL),63 	;Clears the block.
+		RET
+
+YELLOWBLOCK	LD	(HL),112
 		RET
 
 INCH		INC H ;Increment H.
@@ -154,7 +155,7 @@ EDGELEFT	LD	A,0	;Check we're at the start
 		LD	A,88	;Check we're in the first
 		CP	H	;chunk.
 		RET	NZ	;And jump out if we're not.
-		JP	EDGEBLOCK
+		JP	WAIT
 			;Co-ord is 1,1 - Block movement.
 
 EDGERIGHT	LD	A,0FFh	;Check we're in the end
@@ -163,7 +164,7 @@ EDGERIGHT	LD	A,0FFh	;Check we're in the end
 		LD	A,5Ah	;Check we're in the last
 		CP	H	;chunk.
 		RET	NZ	;And jump out if we're not.
-		JP	EDGEBLOCK
+		JP 	WAIT
 			;Co-ord is 31,24 - Block movement.
 
 EDGETOP		LD	A,58h	;Check we're in the top
@@ -172,7 +173,7 @@ EDGETOP		LD	A,58h	;Check we're in the top
 		LD	A,31	;Check we're in the top
 		CP	L	;row.
 		RET	C	;And jump out if we're not.
-		JP	EDGEBLOCK
+		JP	WAIT
 			;In very top row - Block movement.
 
 EDGEBOTTOM	LD	A,5Ah	;Check we're in the bottom
@@ -181,11 +182,17 @@ EDGEBOTTOM	LD	A,5Ah	;Check we're in the bottom
 		LD	A,223	;Check we're in the bottom
 		CP	L	;row
 		RET	NC	;And jump out if we're not.
-		JP	EDGEBLOCK
+		JP	WAIT
 			;In very bottom row - Block movement.
 
-EDGEBLOCK	CALL	CLEARBLOCK
-		;Set HL to a blank colour		
-		LD	(HL),167
-		;Make the new block black
-		JP	WAIT
+COLORCHECK	LD	A,(HL)
+		CP	63
+		CALL	Z,CLEARBLOCK
+		CP	231
+		CALL	Z,CLEARBLOCK
+		CP	112
+		CALL	Z,MARKER
+		RET
+
+MARKER		LD	D,1
+		RET
