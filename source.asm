@@ -134,11 +134,11 @@ HOLDINGPATTERN	OR	C
 
 		JP	HOLDINGPATTERN ;Nothing's been pressed, so loop back.
 
-DUMPBLOCK	LD D,0
-		LD (HL),0
-		JP HOLDINGPATTERN
+DUMPBLOCK	LD D,0;This says not to clear the block.
+		LD (HL),0;Make the current block black
+		JP HOLDINGPATTERN;Go back to checking for keys.
 
-CLEARBLOCK	LD D,1
+CLEARBLOCK	LD D,1;Block's been cleared. Reset the warning.
 		LD (HL),63 ;Clears the block.
 		RET
 
@@ -148,37 +148,41 @@ INCH		INC H ;Increment H.
 DECH		DEC H ;Decrement H.
 		RET
 
-EDGELEFT	LD	A,0
-		CP	L
-		RET	NZ
-		LD	A,88
-		CP	H
-		RET	NZ
+EDGELEFT	LD	A,0	;Check we're at the start
+		CP	L	;of a chunk.
+		RET	NZ	;And jump out if we're not.
+		LD	A,88	;Check we're in the first
+		CP	H	;chunk.
+		RET	NZ	;And jump out if we're not.
 		JP	EDGEBLOCK
+			;Co-ord is 1,1 - Block movement.
 
-EDGERIGHT	LD	A,0FFh
-		CP	L
-		RET	NZ
-		LD	A,5Ah
-		CP	H
-		RET	NZ
+EDGERIGHT	LD	A,0FFh	;Check we're in the end
+		CP	L	;of a chunk.
+		RET	NZ	;And jump out if we're not.
+		LD	A,5Ah	;Check we're in the last
+		CP	H	;chunk.
+		RET	NZ	;And jump out if we're not.
 		JP	EDGEBLOCK
+			;Co-ord is 31,24 - Block movement.
 
-EDGETOP		LD	A,58h
-		CP	H
-		RET	NZ
-		LD	A,31
-		CP	L
-		RET	C
+EDGETOP		LD	A,58h	;Check we're in the top
+		CP	H	;chunk.
+		RET	NZ	;And jump out if we're not.
+		LD	A,31	;Check we're in the top
+		CP	L	;row.
+		RET	C	;And jump out if we're not.
 		JP	EDGEBLOCK
+			;In very top row - Block movement.
 
-EDGEBOTTOM	LD	A,5Ah
-		CP	H
-		RET	NC
-		LD	A,224
-		CP	L
-		RET	C
+EDGEBOTTOM	LD	A,5Ah	;Check we're in the bottom
+		CP	H	;chunk.
+		RET	NZ	;And jump out if we're not.
+		LD	A,223	;Check we're in the bottom
+		CP	L	;row
+		RET	NC	;And jump out if we're not.
 		JP	EDGEBLOCK
+			;In very bottom row - Block movement.
 
 EDGEBLOCK	CALL	CLEARBLOCK
 		;Set HL to a blank colour		
