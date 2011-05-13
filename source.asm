@@ -15,6 +15,7 @@ INITALCLEAR	LD A,0  ; colour 2 is RED
 		LDIR ;Clear the entire screen.
 
 DRAWBLACKLINE	;Draws a black square on the screen.
+		LD	HL,5800h
 		LD	(HL), A
 		;Dump colour bit to display file
 		JP	HOLDINGPATTERN
@@ -133,11 +134,11 @@ HOLDINGPATTERN	OR	C
 
 		JP	HOLDINGPATTERN ;Nothing's been pressed, so loop back.
 
-DUMPBLOCK	;PUSH (HL)
+DUMPBLOCK	LD D,0
 		LD (HL),0
 		JP HOLDINGPATTERN
 
-CLEARBLOCK	;POP (HL)
+CLEARBLOCK	LD D,1
 		LD (HL),63 ;Clears the block.
 		RET
 
@@ -150,9 +151,9 @@ DECH		DEC H ;Decrement H.
 EDGECHECK	LD	A,0
 		CP	L
 		RET	NZ
-		LD	A,64
+		LD	A,88
 		CP	H
-		RET	Z
+		RET	NZ
 		JP	EDGEBLOCK
 
 EDGEBLOCK	CALL	CLEARBLOCK
