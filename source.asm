@@ -213,8 +213,10 @@ COLORCHECK	LD	A,(HL)
 MARKER		LD	D,1
 		RET
 
-GENLOOP		CALL	CHECKSUITE
+GENLOOP		LD	E,0		
+		CALL	CHECKSUITE
 		CALL	GOD
+		LD	E,0
 
 		;Tests to ensure loops round the entire screen.
 		INC	L
@@ -229,18 +231,18 @@ GENLOOP		CALL	CHECKSUITE
 
 		JP	GENLOOP 	;Keep looping.
 
-GOD		LD	A,E
-		CP	0
-		CALL	Z,CLEARBLOCK
+GOD		LD	A,3
+		;CP	0
+		;CALL	Z,CLEARBLOCK
 
-		CP	1
-		CALL	Z,CLEARBLOCK
+		;CP	1
+		;CALL	Z,CLEARBLOCK
 
 		CP	3
 		CALL	Z,GODBLOCK
-
-		CP	4
-		CALL	NC,CLEARBLOCK
+		
+		;CP	4
+		;CALL	NC,CLEARBLOCK
 
 		RET
 
@@ -248,7 +250,6 @@ GODBLOCK	LD	(HL),112
 		RET
 
 CHECKSUITE	PUSH	HL
-		LD	E,0
 
 		;Check  straight up.
 		LD	A,L
@@ -257,16 +258,114 @@ CHECKSUITE	PUSH	HL
 		LD	L,A
 
 		LD	A,(HL)
-		CP	63 ;Is it blank?
-		CALL	NZ,INCE
+		CP	231 ;Is it yellow?
+		CALL	Z,INCE
 
 		POP	HL
-		;PUSH	HL
+		PUSH	HL
 		;Done checking up.
 
+		;Check up and left.
+		;LD	A,L
+		;SBC	A,33
+		;CALL	C,DECH
+		;LD	L,A
+
+		;LD	A,(HL)
+		;CP	231 ;Is it blank?
+		;CALL	Z,INCE
+
+		;POP	HL
+		;PUSH	HL
+		;Done checking up left.
+
+		;Check up and right..
+		;LD	A,L
+		;SBC	A,31
+		;CALL	C,DECH
+		;LD	L,A
+
+		;LD	A,(HL)
+		;CP	231 ;Is it blank?
+		;CALL	Z,INCE
+
+		;POP	HL
+		;PUSH	HL
+		;Done checking up right.
+
+		;Check down and left.
+		;LD	A,L
+		;ADD	A,31
+		;CALL	C,INCH
+		;LD	L,A
+
+		;LD	A,(HL)
+		;CP	63 ;Is it blank?
+		;CALL	NZ,INCE
+
+		;POP	HL
+		;PUSH	HL
+		;Done checking down left.
+
+		;Check down.
+		;LD	A,L
+		;ADD	A,32
+		;CALL	C,INCH
+		;LD	L,A
+
+		;LD	A,(HL)
+		CP	231 ;Is it blank?
+		CALL	Z,INCE
+
+		POP	HL
+		PUSH	HL
+		;Done checking down.
+
+		;Check down and right.
+		LD	A,L
+		ADD	A,33
+		CALL	C,INCH
+		LD	L,A
+
+		LD	A,(HL)
+		CP	231 ;Is it blank?
+		CALL	Z,INCE
+
+		POP	HL
+		PUSH	HL
+		;Done checking down right.
+
+		;Check right.
+		;LD	A,L
+		;ADD	A,1
+		;CALL	C,INCH
+		;LD	L,A
+		INC	HL
+
+		LD	A,(HL)
+		CP	231 ;Is it blank?
+		CALL	Z,INCE
+
+		POP	HL
+		PUSH	HL
+		;Done checking right.
+
+		;Check left
+		;LD	A,L
+		;ADD	A,1
+		;CALL	C,DECH
+		;LD	L,A
+		DEC	HL
+
+		LD	A,(HL)
+		CP	231 ;Is it blank?
+		CALL	Z,INCE
+		;Done checking left.
+		POP	HL
 		
 		RET
 
 INCE		INC	E
+		;LD	E,3 ;DEBUG ONLY
 		RET
 		
