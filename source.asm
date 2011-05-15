@@ -141,7 +141,37 @@ HOLDINGPATTERN	OR	C
 		CALL	NC, STARTLOOP
 		;--- End Space key spotting --
 
+		;--- Start Q key spotting ---
+		LD	A,0FBh
+		;Read Q - T.
+		IN	A,(0FEh)
+		;Read the keyboard input port.
+		RRA ;Cycle to the Q key.
+		CALL	NC,CLSINIT ;If Q is pressed, move up.
+		;--- End Q key spotting ---
+
 		JP	HOLDINGPATTERN ;Nothing's been pressed, so loop back.
+
+CLSINIT		LD	HL,5800h
+		CALL	CLS
+		LD	HL,5800h
+		LD	(HL),231
+		RET
+
+CLS		LD	(HL),63
+
+		;Tests to ensure loops round the entire screen.
+		INC	L
+		LD	A,0
+		CP	L
+		CALL	Z,INCH
+
+		LD	A,5Bh
+		CP	H
+		RET	Z
+		;End loop tests.
+
+		JP	CLS 	;Keep looping.
 
 STARTLOOP	CALL	NC, CLEARBLOCK
 		LD	HL, 5800h
@@ -231,22 +261,35 @@ GENLOOP		LD	E,0
 
 		JP	GENLOOP 	;Keep looping.
 
-GOD		LD	A,3
-		;CP	0
-		;CALL	Z,CLEARBLOCK
+GOD		LD	A,E
+		CP	0
+		CALL	Z,MARKFORDELETE
 
-		;CP	1
-		;CALL	Z,CLEARBLOCK
+		CP	1
+		CALL	Z,MARKFORDELETE
+		
+		CP	2
+		CALL	Z,MARKFORSKIP
 
 		CP	3
-		CALL	Z,GODBLOCK
+		CALL	Z,MARKFORCREATE
 		
-		;CP	4
-		;CALL	NC,CLEARBLOCK
+		CP	4
+		CALL	NC,MARKFORDELETE
 
 		RET
 
-GODBLOCK	LD	(HL),112
+MARKFORSKIP	LD	(HL),112
+		RET
+
+MARKFORDELETE	LD	A,(HL)
+		CP	63
+		RET	Z
+
+		LD	(HL),16
+		RET
+
+MARKFORCREATE	LD	(HL),32
 		RET
 
 CHECKSUITE	PUSH	HL
@@ -258,7 +301,7 @@ CHECKSUITE	PUSH	HL
 		LD	L,A
 
 		LD	A,(HL)
-		CP	231 ;Is it yellow?
+		CP	112 ;Is it yellow?
 		CALL	Z,INCE
 
 		POP	HL
@@ -266,55 +309,55 @@ CHECKSUITE	PUSH	HL
 		;Done checking up.
 
 		;Check up and left.
-		;LD	A,L
-		;SBC	A,33
-		;CALL	C,DECH
-		;LD	L,A
+		LD	A,L
+		SBC	A,33
+		CALL	C,DECH
+		LD	L,A
 
-		;LD	A,(HL)
-		;CP	231 ;Is it blank?
-		;CALL	Z,INCE
+		LD	A,(HL)
+		CP	112 ;Is it blank?
+		CALL	Z,INCE
 
-		;POP	HL
-		;PUSH	HL
+		POP	HL
+		PUSH	HL
 		;Done checking up left.
 
 		;Check up and right..
-		;LD	A,L
-		;SBC	A,31
-		;CALL	C,DECH
-		;LD	L,A
+		LD	A,L
+		SBC	A,31
+		CALL	C,DECH
+		LD	L,A
 
-		;LD	A,(HL)
-		;CP	231 ;Is it blank?
-		;CALL	Z,INCE
+		LD	A,(HL)
+		CP	112 ;Is it blank?
+		CALL	Z,INCE
 
-		;POP	HL
-		;PUSH	HL
+		POP	HL
+		PUSH	HL
 		;Done checking up right.
 
 		;Check down and left.
-		;LD	A,L
-		;ADD	A,31
-		;CALL	C,INCH
-		;LD	L,A
+		LD	A,L
+		ADD	A,31
+		CALL	C,INCH
+		LD	L,A
 
-		;LD	A,(HL)
-		;CP	63 ;Is it blank?
-		;CALL	NZ,INCE
+		LD	A,(HL)
+		CP	112 ;Is it blank?
+		CALL	Z,INCE
 
-		;POP	HL
-		;PUSH	HL
+		POP	HL
+		PUSH	HL
 		;Done checking down left.
 
 		;Check down.
-		;LD	A,L
-		;ADD	A,32
-		;CALL	C,INCH
-		;LD	L,A
+		LD	A,L
+		ADD	A,32
+		CALL	C,INCH
+		LD	L,A
 
-		;LD	A,(HL)
-		CP	231 ;Is it blank?
+		LD	A,(HL)
+		CP	112 ;Is it blank?
 		CALL	Z,INCE
 
 		POP	HL
@@ -328,7 +371,7 @@ CHECKSUITE	PUSH	HL
 		LD	L,A
 
 		LD	A,(HL)
-		CP	231 ;Is it blank?
+		CP	112 ;Is it blank?
 		CALL	Z,INCE
 
 		POP	HL
@@ -336,14 +379,14 @@ CHECKSUITE	PUSH	HL
 		;Done checking down right.
 
 		;Check right.
-		;LD	A,L
-		;ADD	A,1
-		;CALL	C,INCH
-		;LD	L,A
+		LD	A,L
+		ADD	A,1
+		CALL	C,INCH
+		LD	L,A
 		INC	HL
 
 		LD	A,(HL)
-		CP	231 ;Is it blank?
+		CP	112 ;Is it blank?
 		CALL	Z,INCE
 
 		POP	HL
@@ -351,14 +394,14 @@ CHECKSUITE	PUSH	HL
 		;Done checking right.
 
 		;Check left
-		;LD	A,L
-		;ADD	A,1
-		;CALL	C,DECH
-		;LD	L,A
+		LD	A,L
+		ADD	A,1
+		CALL	C,DECH
+		LD	L,A
 		DEC	HL
 
 		LD	A,(HL)
-		CP	231 ;Is it blank?
+		CP	112 ;Is it blank?
 		CALL	Z,INCE
 		;Done checking left.
 		POP	HL
