@@ -276,7 +276,7 @@ REPLACELOOP	CALL	BLOCKMOVE
 		JP	REPLACELOOP 	;Keep looping.
 		
 
-GOD		LD	A,E
+GOD		LD	A,E ;Carries out the relevant actions.
 		CP	0
 		CALL	Z,KILLBLOCK
 		;CALL	Z,KEEPBLOCK
@@ -307,36 +307,36 @@ GOD		LD	A,E
 		
 		RET
 
-KILLBLOCK	PUSH	HL	
-		CALL	MOVEMEMORY
-		LD	(HL),56
-		POP	HL
+KILLBLOCK	PUSH	HL		;Store where we are in display.
+		CALL	MOVEMEMORY	;Move to our temporary RAM area.
+		LD	(HL),56			;Blank it.
+		POP	HL				;Move back.
 		RET
 
 CREATEBLOCK	PUSH	HL	
 		CALL	MOVEMEMORY
-		LD	(HL),112
+		LD	(HL),112		;Yellow it.
 		POP	HL
 		RET
 
 KEEPBLOCK	PUSH	HL
 		LD	D,(HL)
 		CALL	MOVEMEMORY
-		LD	(HL),D
+		LD	(HL),D			;Maintain the state.
 		POP	HL
 		RET
 		
 MOVEMEMORY	INC	L
 		LD	A,H
-		ADD	A,40
+		ADD	A,40			;Move up 40*255 memory locations.
 		LD	H,A
 		RET
 
 BLOCKMOVE	PUSH	HL
-		CALL	MOVEMEMORY
-		LD	D,(HL)
-		POP	HL
-		LD	(HL),D
+		CALL	MOVEMEMORY	;Find the relevant location in RAM.
+		LD	D,(HL)			;Drop the colour block to temporary storage.
+		POP	HL				;Return to the display.
+		LD	(HL),D			;Drop the colour.
 		RET
 
 CHECKSUITE	;Check  straight up.
